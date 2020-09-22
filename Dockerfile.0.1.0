@@ -80,4 +80,32 @@ RUN R -e 'install.packages("pkgbuild")'
 RUN R -e 'devtools::install_version("BiocGenerics", version="0.34.0", repos=c("https://bioconductor.org/packages/3.11/bioc","http://cran.us.r-project.org"),upgrade = "never", force = TRUE)'
 RUN R -e 'devtools::install_version("MAGeCKFlute", version="1.8.0", repos=c("https://bioconductor.org/packages/3.11/bioc","http://cran.us.r-project.org"),upgrade = "never", force = TRUE)'
 
+## Set a default user. Available via runtime flag `--user docker`
+## Add user to 'staff' group, granting them write privileges to /usr/local/lib/R/site.library
+## User should also have & own a home directory (for rstudio or linked volumes to work properly).
+RUN useradd --create-home --shell /bin/bash docker \
+        #&& mkdir /home/docker \
+        && chown docker:docker /home/docker \
+        && addgroup docker staff
+#https://stackoverflow.com/questions/27701930/how-to-add-users-to-docker-container
+RUN echo 'docker:docker4bix' | chpasswd
+
+
+WORKDIR /home/docker/
+USER docker
+RUN wget \
+    https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    && mkdir /home/docker/.conda \
+    && bash Miniconda3-latest-Linux-x86_64.sh -b \
+    && rm -f Miniconda3-latest-Linux-x86_64.sh
+ENV PATH=/home/docker/miniconda3/bin/:${PATH} 
+RUN conda --version
+RUN . /home/docker/miniconda3/etc/profile.d/conda.sh  && conda activate base && \
+    conda install -y -c conda-forge mamba==0.5.1 && \
+    mamba install -y -c bioconda mageck==0.5.9.4
+
+RUN conda config --add channels defaults && conda config --add channels bioconda && conda config --add channels conda-forge &&  mamba install -y  mageck-vispr==0.5.4
+
+#RUN mageck -h
+
 
