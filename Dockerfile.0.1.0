@@ -1,0 +1,83 @@
+FROM bioconductor/bioconductor_docker:RELEASE_3_11
+
+MAINTAINER Jonas Schulte-Schrepping
+
+# This will make apt-get install without question
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update && \
+    apt-get install -y apt-utils \
+    	    	       libudunits2-dev \
+		       libhdf5-dev \
+		       libgdal-dev \
+		       gdal-bin \
+		       proj-bin \
+		       libproj-dev \
+		       libgsl-dev \
+		       libxml2 \
+		       libxml2-dev \
+		       libigraph0-dev \
+		       zlib1g-dev \
+		       libtool \
+		       bison \
+		       flex \
+		       automake \
+		       autoconf \
+		       libpng*-dev \
+		       libglpk-dev \
+		       xorg \
+		       libx11-dev \
+		       libglu1-mesa-dev \
+		       libfreetype*-dev \
+		       p7zip \
+		       build-essential \
+		       libssl-dev \
+		       libffi-dev \
+		       libxslt1-dev \
+		       python3 \
+		       python-dev \
+		       python3-dev \
+		       python3-pip \
+		       libxt-dev \
+		       libgtk2.0-dev \
+		       libcairo2-dev \
+		       xvfb \
+		       xauth \
+		       xfonts-base
+
+# update pip
+RUN pip install --upgrade pip
+RUN pip3 install --upgrade pip
+
+# install wheel
+RUN pip install wheel
+
+# install umap-learn
+RUN pip3 install numpy==1.19.1
+RUN pip3 install scipy==1.5.2
+RUN pip3 install python-igraph==0.8.2
+
+RUN pip install jupyterlab==2.2.8
+## https://github.com/jupyterlab/jupyterlab-toc
+
+## x means 12 here
+RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
+RUN apt-get install -y nodejs
+
+RUN jupyter labextension install @jupyterlab/toc
+
+
+RUN R -e 'devtools::install_version("IRkernel", version = "1.1.1", repos = "https://cran.rstudio.com/",upgrade = "never", force = TRUE)'
+RUN R -e 'IRkernel::installspec(name = "R-MAGeCKFlute-1.8.0", displayname = "R-4.0.2", user = FALSE)'
+
+
+RUN R -e 'install.packages("devtools")'
+RUN R -e 'install.packages("pkgbuild")'
+
+# install bioc packages
+#ADD install_bioc.R /tmp/
+#RUN R -f /tmp/install_bioc.R
+RUN R -e 'devtools::install_version("BiocGenerics", version="0.34.0", repos=c("https://bioconductor.org/packages/3.11/bioc","http://cran.us.r-project.org"),upgrade = "never", force = TRUE)'
+RUN R -e 'devtools::install_version("MAGeCKFlute", version="1.8.0", repos=c("https://bioconductor.org/packages/3.11/bioc","http://cran.us.r-project.org"),upgrade = "never", force = TRUE)'
+
+
