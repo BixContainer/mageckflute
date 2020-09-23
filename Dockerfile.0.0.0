@@ -85,30 +85,31 @@ RUN wget \
     && mkdir /home/docker/.conda \
     && bash Miniconda3-latest-Linux-x86_64.sh -b \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
-ENV PATH=/home/docker/miniconda3/bin/:${PATH} 
+ENV PATH=${PATH}:/home/docker/miniconda3/bin/:
 RUN conda --version
 RUN . /home/docker/miniconda3/etc/profile.d/conda.sh  && conda activate base && \
     conda install -y -c conda-forge mamba==0.5.1
 
 RUN conda config --add channels defaults && conda config --add channels bioconda && conda config --add channels conda-forge &&  mamba install -y  mageck-vispr==0.5.4 
-RUN mamba install -c bioconda bioconductor-mageckflute==1.4.2
-RUN mamba install -c r r-stringi==1.4.3
+#RUN mamba install -c bioconda bioconductor-mageckflute==1.4.2
+#RUN mamba install -c r r-stringi==1.4.3
 #RUN mamba install -c bioconda bioconductor-org.hs.eg.db==3.7.0
-
-RUN R -e 'install.packages("devtools", repos="http://cran.us.r-project.org")'
-RUN R -e 'install.packages("pkgbuild", repos="http://cran.us.r-project.org")'
-
-RUN R -e 'devtools::install_version("org.Hs.eg.db", version="3.7.0", repos="https://bioconductor.org/packages/3.11/data/annotation",upgrade = "never", force = TRUE)'
-
-
-
 RUN mamba install -c conda-forge ipykernel==5.3.4
 RUN ipython kernel install --user --name=mageck
 
-RUN mamba install -c r r-irkernel==0.8.12
+RUN . /home/docker/miniconda3/etc/profile.d/conda.sh  &&  conda deactivate 
+RUN conda config --set auto_activate_base false
+
+RUN which R
+RUN R -e 'install.packages("knitr", repos="http://cran.us.r-project.org")'
+RUN R -e 'install.packages("devtools", repos="http://cran.us.r-project.org")'
+RUN R -e 'install.packages("pkgbuild", repos="http://cran.us.r-project.org")'
+
+#RUN R -e 'devtools::install_version("org.Hs.eg.db", version="3.7.0", repos="https://bioconductor.org/packages/3.10/data/annotation",upgrade = "never", force = TRUE)'
+RUN R -e 'devtools::install_version("org.Hs.eg.db", version="3.7.0", repos="https://bioconductor.org/packages/3.10/data/annotation",upgrade = "never", force = TRUE)'
 
 USER root
-RUN R -e 'IRkernel::installspec(name = "R-mageck", displayname = "R-mageck", user = FALSE)'
+#RUN R -e 'IRkernel::installspec(name = "R-mageck", displayname = "R-mageck", user = FALSE)'
 USER docker
 #RUN mageck -h
 
