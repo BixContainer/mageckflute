@@ -96,7 +96,7 @@ RUN wget \
     && mkdir /home/docker/.conda \
     && bash Miniconda3-latest-Linux-x86_64.sh -b \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
-ENV PATH=/home/docker/miniconda3/bin/:${PATH} 
+ENV PATH=${PATH}:/home/docker/miniconda3/bin/
 RUN conda --version
 RUN . /home/docker/miniconda3/etc/profile.d/conda.sh  && conda activate base && \
     conda install -y -c conda-forge mamba==0.5.1 && \
