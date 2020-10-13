@@ -106,6 +106,5 @@ RUN conda config --add channels defaults && conda config --add channels bioconda
 RUN mamba install -c conda-forge ipykernel==5.3.4
 RUN ipython kernel install --user --name=mageck
 
-
 USER docker
 
