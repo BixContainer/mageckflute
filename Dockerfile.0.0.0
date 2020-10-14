@@ -1,4 +1,4 @@
-FROM bioconductor/bioconductor_docker:RELEASE_3_10
+FROM bioconductor/bioconductor_docker:RELEASE_3_11
 
 MAINTAINER Jonas Schulte-Schrepping
 
@@ -66,6 +66,21 @@ RUN apt-get install -y nodejs
 
 RUN jupyter labextension install @jupyterlab/toc
 
+RUN R -e 'install.packages("devtools")'
+RUN R -e 'install.packages("pkgbuild")'
+
+RUN R -e 'devtools::install_version("IRkernel", version = "1.1.1", repos = "https://cran.rstudio.com/",upgrade = "never", force = TRUE)'
+RUN R -e 'IRkernel::installspec(name = "R-MAGeCKFlute-1.8.0", displayname = "R-4.0.2", user = FALSE)'
+
+# install bioc packages
+#ADD install_bioc.R /tmp/
+#RUN R -f /tmp/install_bioc.R
+RUN R -e 'devtools::install_version("BiocGenerics", version="0.34.0", repos=c("https://bioconductor.org/packages/3.11/bioc","http://cran.us.r-project.org"),upgrade = "never", force = TRUE)'
+RUN R -e 'devtools::install_version("MAGeCKFlute", version="1.8.0", repos=c("https://bioconductor.org/packages/3.11/bioc","http://cran.us.r-project.org"),upgrade = "never", force = TRUE)'
+RUN R -e 'devtools::install_github("daattali/ggExtra")'
+RUN wget https://bioconductor.org/packages/3.9/bioc/src/contrib/Archive/MAGeCKFlute/MAGeCKFlute_1.4.2.tar.gz
+RUN R CMD INSTALL MAGeCKFlute_1.4.2.tar.gz
+RUN rm MAGeCKFlute_1.4.2.tar.gz
 
 ## Set a default user. Available via runtime flag `--user docker`
 ## Add user to 'staff' group, granting them write privileges to /usr/local/lib/R/site.library
@@ -85,32 +100,15 @@ RUN wget \
     && mkdir /home/docker/.conda \
     && bash Miniconda3-latest-Linux-x86_64.sh -b \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
-ENV PATH=${PATH}:/home/docker/miniconda3/bin/:
+ENV PATH=${PATH}:/home/docker/miniconda3/bin/
 RUN conda --version
 RUN . /home/docker/miniconda3/etc/profile.d/conda.sh  && conda activate base && \
-    conda install -y -c conda-forge mamba==0.5.1
+    conda install -y -c conda-forge mamba==0.5.1 && \
+    mamba install -y -c bioconda mageck==0.5.9.4
 
-RUN conda config --add channels defaults && conda config --add channels bioconda && conda config --add channels conda-forge &&  mamba install -y  mageck-vispr==0.5.4 
-#RUN mamba install -c bioconda bioconductor-mageckflute==1.4.2
-#RUN mamba install -c r r-stringi==1.4.3
-#RUN mamba install -c bioconda bioconductor-org.hs.eg.db==3.7.0
-RUN mamba install -c conda-forge ipykernel==5.3.4
+RUN conda config --add channels defaults && conda config --add channels bioconda && conda config --add channels conda-forge &&  mamba install -y  mageck-vispr==0.5.4
+RUN mamba install -y -c conda-forge ipykernel==5.3.4
 RUN ipython kernel install --user --name=mageck
 
-RUN . /home/docker/miniconda3/etc/profile.d/conda.sh  &&  conda deactivate 
-RUN conda config --set auto_activate_base false
-
-RUN which R
-RUN R -e 'install.packages("knitr", repos="http://cran.us.r-project.org")'
-RUN R -e 'install.packages("devtools", repos="http://cran.us.r-project.org")'
-RUN R -e 'install.packages("pkgbuild", repos="http://cran.us.r-project.org")'
-
-#RUN R -e 'devtools::install_version("org.Hs.eg.db", version="3.7.0", repos="https://bioconductor.org/packages/3.10/data/annotation",upgrade = "never", force = TRUE)'
-RUN R -e 'devtools::install_version("org.Hs.eg.db", version="3.7.0", repos="https://bioconductor.org/packages/3.10/data/annotation",upgrade = "never", force = TRUE)'
-
-USER root
-#RUN R -e 'IRkernel::installspec(name = "R-mageck", displayname = "R-mageck", user = FALSE)'
 USER docker
-#RUN mageck -h
-
 
