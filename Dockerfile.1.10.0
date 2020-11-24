@@ -1,4 +1,4 @@
-FROM bioconductor/bioconductor_docker:RELEASE_3_11
+FROM bioconductor/bioconductor_docker:RELEASE_3_12
 
 MAINTAINER Jonas Schulte-Schrepping
 
@@ -9,7 +9,7 @@ RUN apt-get update && \
     apt-get install -y apt-utils \
     	    	       libudunits2-dev \
 		       libhdf5-dev \
-		       libgdal-dev \
+		       #libgdal-dev \
 		       gdal-bin \
 		       proj-bin \
 		       libproj-dev \
@@ -70,13 +70,13 @@ RUN R -e 'install.packages("devtools")'
 RUN R -e 'install.packages("pkgbuild")'
 
 RUN R -e 'devtools::install_version("IRkernel", version = "1.1.1", repos = "https://cran.rstudio.com/",upgrade = "never", force = TRUE)'
-RUN R -e 'IRkernel::installspec(name = "R-MAGeCKFlute-1.8.0", displayname = "R-4.0.2", user = FALSE)'
+RUN R -e 'IRkernel::installspec(name = "R-MAGeCKFlute-1.10.0", displayname = "R-4.0.2", user = FALSE)'
 
 # install bioc packages
 #ADD install_bioc.R /tmp/
 #RUN R -f /tmp/install_bioc.R
-RUN R -e 'devtools::install_version("BiocGenerics", version="0.34.0", repos=c("https://bioconductor.org/packages/3.11/bioc","http://cran.us.r-project.org"),upgrade = "never", force = TRUE)'
-RUN R -e 'devtools::install_version("MAGeCKFlute", version="1.8.0", repos=c("https://bioconductor.org/packages/3.11/bioc","http://cran.us.r-project.org"),upgrade = "never", force = TRUE)'
+RUN R -e 'devtools::install_version("BiocGenerics", version="0.36.0", repos=c("https://bioconductor.org/packages/3.12/bioc","http://cran.us.r-project.org"),upgrade = "never", force = TRUE)'
+RUN R -e 'devtools::install_version("MAGeCKFlute", version="1.10.0", repos=c("https://bioconductor.org/packages/3.12/bioc","http://cran.us.r-project.org"),upgrade = "never", force = TRUE)'
 
 ## Set a default user. Available via runtime flag `--user docker`
 ## Add user to 'staff' group, granting them write privileges to /usr/local/lib/R/site.library
@@ -103,7 +103,7 @@ RUN . /home/docker/miniconda3/etc/profile.d/conda.sh  && conda activate base && 
     mamba install -y -c bioconda mageck==0.5.9.4
 
 RUN conda config --add channels defaults && conda config --add channels bioconda && conda config --add channels conda-forge &&  mamba install -y  mageck-vispr==0.5.4
-RUN mamba install -c conda-forge ipykernel==5.3.4
+RUN mamba install -y -c conda-forge ipykernel==5.3.4
 RUN ipython kernel install --user --name=mageck
 
 RUN R -e 'devtools::install_version("rmarkdown", version="2.5", repos=c("https://bioconductor.org/packages/3.11/bioc","http://cran.us.r-project.org"),upgrade = "never", force = TRUE)'

@@ -1,0 +1,6 @@
+
+
+docker build -t jupyterlab-mageckflute:1.10.0 -f Dockerfile.1.10.0 .
+docker tag jupyterlab-mageckflute:1.10.0 bix4oa/jupyterlab-mageckflute:1.10.0
+docker push bix4oa/jupyterlab-mageckflute:1.10.0
+
